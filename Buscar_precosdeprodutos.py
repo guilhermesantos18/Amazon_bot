@@ -5,11 +5,13 @@ from time import sleep
 
 site = 'https://www.amazon.es/s?k=ratos+razer&ref=nb_sb_noss_2'
 # Inicializar o webdriver
+options = Options()
+options.add_argument('--headless')
 pasta = 'C:\Program Files (x86)\chromedriver.exe'
-navegador = webdriver.Chrome(pasta)
-
+navegador = webdriver.Chrome(pasta, options=options)
 navegador.get(site)
 navegador.maximize_window()
+
 
 cookies = navegador.find_element_by_xpath('//*[@id="sp-cc-accept"]').click()
 idioma = navegador.find_element_by_xpath('//*[@id="icp-nav-flyout"]/span/span[2]').click()
@@ -20,7 +22,6 @@ sleep(1)
 
 site_html = BeautifulSoup(navegador.page_source, 'html.parser')
 produtos = site_html.findAll('div', attrs={'class': 'sg-col-4-of-12 s-result-item s-asin sg-col-4-of-16 sg-col sg-col-4-of-20'})
-print(produtos)
 
 for produto in produtos:
     nome_produto = produto.find('h2', attrs={'class': 'a-size-mini a-spacing-none a-color-base s-line-clamp-4'}).text
@@ -28,8 +29,10 @@ for produto in produtos:
     if produto.find('span', attrs={'class': 'a-offscreen'}) is None:
         continue
     if 'Razer' in nome_produto[0:5]:
-        preco_do_produto = produto.find('span', attrs={'class': 'a-offscreen'}).text
+        preco_do_produto = produto.find('span', attrs={'class': 'a-offscreen'})[0].text
+        preco_do_produto_sem_desconto = produto.find('span', attrs={'class': 'a-offscreen'})[1].text
         print(nome_produto)
+        print(preco_do_produto_sem_desconto)
         print(preco_do_produto)
     # if preco_sem_desconto:
     #     print(preco_do_produto)
@@ -37,7 +40,7 @@ for produto in produtos:
     # else:
     #     print(preco_do_produto + ' €')
 
-navegador.close()
+# navegador.close()
 # produtos = html.findAll('div', attrs={'class': 'andes-card andes-card--flat andes-card--default ui-search-result ui-search-result--core andes-card--padding-default'})
 #
 #
