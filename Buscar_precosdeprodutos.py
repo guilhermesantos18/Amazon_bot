@@ -25,15 +25,14 @@ produtos = site_html.findAll('div', attrs={'class': 'sg-col-4-of-12 s-result-ite
 
 for produto in produtos:
     nome_produto = produto.find('h2', attrs={'class': 'a-size-mini a-spacing-none a-color-base s-line-clamp-4'}).text
-    avaliacoes = produto.find('span', attrs={'class': 'a-price a-text-price'})
-    if produto.find('span', attrs={'class': 'a-offscreen'}) is None:
-        continue
     if 'Razer' in nome_produto[0:5]:
-        preco_do_produto = produto.find('span', attrs={'class': 'a-offscreen'})[0].text
-        preco_do_produto_sem_desconto = produto.find('span', attrs={'class': 'a-offscreen'})[1].text
-        print(nome_produto)
-        print(preco_do_produto_sem_desconto)
-        print(preco_do_produto)
+        print(produto.find('span', attr={'class': 'a-offscreen'}))
+        if produto.find('span', attrs={'class': 'a-price a-text-price'}):
+            print(nome_produto)
+            preco_do_produto_sem_desconto = produto.find('span', attrs={'class': 'a-price a-text-price'})
+            print(preco_do_produto_sem_desconto)
+        else:
+            print(nome_produto)
     # if preco_sem_desconto:
     #     print(preco_do_produto)
     #     print(preco_do_produto + ' €')
