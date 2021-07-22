@@ -2,8 +2,11 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+# Para criar tabelas
+import pandas as pd
 
 site = 'https://www.amazon.es/s?k=ratos+razer&ref=nb_sb_noss_2'
+lista_produtos = []
 # Inicializar o webdriver
 options = Options()
 options.add_argument('--headless')
@@ -12,7 +15,7 @@ navegador = webdriver.Chrome(pasta, options=options)
 navegador.get(site)
 navegador.maximize_window()
 
-
+# Configurações no site
 cookies = navegador.find_element_by_xpath('//*[@id="sp-cc-accept"]').click()
 idioma = navegador.find_element_by_xpath('//*[@id="icp-nav-flyout"]/span/span[2]').click()
 selecionar_idioma = navegador.find_element_by_xpath('//*[@id="customer-preferences"]/div/div/form/div[1]/div[1]/div[2]/div/label/span').click()
@@ -20,41 +23,29 @@ guardar_alteracoes = navegador.find_element_by_xpath('//*[@id="icp-btn-save"]/sp
 
 sleep(1)
 
+# HTML do site
 site_html = BeautifulSoup(navegador.page_source, 'html.parser')
 produtos = site_html.findAll('div', attrs={'class': 'sg-col-4-of-12 s-result-item s-asin sg-col-4-of-16 sg-col sg-col-4-of-20'})
 
+# Obter os informações
 for produto in produtos:
     nome_produto = produto.find('h2', attrs={'class': 'a-size-mini a-spacing-none a-color-base s-line-clamp-4'}).text
+    avaliacoes = produto.find('span', attrs={'class': 'a-size-base'}).text
     if 'Razer' in nome_produto[0:5]:
-        print(produto.find('span', attr={'class': 'a-offscreen'}))
-        if produto.find('span', attrs={'class': 'a-price a-text-price'}):
-            print(nome_produto)
-            preco_do_produto_sem_desconto = produto.find('span', attrs={'class': 'a-price a-text-price'})
-            print(preco_do_produto_sem_desconto)
+        if produto.find('span', attrs={'class': 'a-price-whole'}):
+            preco_do_produto_com_desconto = produto.find('span', attrs={'class': 'a-price-whole'}).text
+            if produto.find('span', attrs={'class': 'a-price a-text-price'}):
+                div_preco = produto.find('span', attrs={'class': 'a-price a-text-price'})
+                preco_do_produto = div_preco.find('span', attrs={'class': 'a-offscreen'}).text
+                lista_produtos.append([nome_produto, preco_do_produto, preco_do_produto_com_desconto + ' €', avaliacoes])
+            else:
+                lista_produtos.append([nome_produto, '', preco_do_produto_com_desconto + ' €', avaliacoes])
         else:
-            print(nome_produto)
-    # if preco_sem_desconto:
-    #     print(preco_do_produto)
-    #     print(preco_do_produto + ' €')
-    # else:
-    #     print(preco_do_produto + ' €')
+            continue
 
-# navegador.close()
-# produtos = html.findAll('div', attrs={'class': 'andes-card andes-card--flat andes-card--default ui-search-result ui-search-result--core andes-card--padding-default'})
-#
-#
-# for produto in produtos:
-#     nome_produto = produto.find('h2', attrs={'class': 'ui-search-item__title'})
-#     link_do_produto = produto.find('a', attrs={'class': 'ui-search-item__group__element ui-search-link'})
-#     euros = produto.find('span', attrs={'class': 'price-tag-fraction'}).text
-#     centimos = produto.find('span', attrs={'class': 'price-tag-cents'})
-#
-#     print(f'O nome do produto é {nome_produto.text}.')
-#     print('O link do produto é {}'.format(link_do_produto['href']))
-#     if not centimos:
-#         preco_produto = f'{euros}R$'
-#         print(f'O preco do produto é {preco_produto}')
-#     else:
-#         preco_produto = f'{euros},{centimos.text}R$'
-#         print(f'O preco do produto é {preco_produto}')
-#     print('\n\n')
+
+# Criar a tabela
+amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preco do produto com desconto', 'Avaliações'])
+print(amazon_data)
+# Salvar as news num excel
+# amazon_data.to_excel('amazon.xlsx', index=True)
