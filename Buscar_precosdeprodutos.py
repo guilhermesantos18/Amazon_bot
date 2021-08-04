@@ -7,6 +7,7 @@ import pandas as pd
 
 site = 'https://www.amazon.es/s?k=ratos+razer&ref=nb_sb_noss_2'
 lista_produtos = []
+lista_comprimento_nome_produtos = []
 # Inicializar o webdriver
 options = Options()
 options.add_argument('--headless')
@@ -41,10 +42,14 @@ for produto in produtos:
         else:
             continue
 
-print(lista_produtos)
 # Criar a tabela
 amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preço do produto com desconto', 'Avaliações'])
-amazon_data = amazon_data.style.set_properties(**{'text-align': 'center'})
-print(amazon_data)
-# Salvar dados num excel
-amazon_data.to_excel('amazon.xlsx')
+# Ajustar a Tabela para ser legivel
+writer = pd.ExcelWriter('amazon.xlsx')
+amazon_data.to_excel(writer, sheet_name='data')
+for nome in amazon_data['Nome do produto']:
+    lista_comprimento_nome_produtos.append(len(nome))
+comprimentos_maior_nome_produto = max(lista_comprimento_nome_produtos)
+writer.sheets['data'].set_column(1, 1, comprimentos_maior_nome_produto-30)
+
+writer.save()
