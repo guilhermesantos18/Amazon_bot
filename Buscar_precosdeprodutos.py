@@ -38,14 +38,13 @@ for produto in produtos:
                 div_preco = produto.find('span', attrs={'class': 'a-price a-text-price'})
                 preco_do_produto = div_preco.find('span', attrs={'class': 'a-offscreen'}).text
                 lista_produtos.append([nome_produto, preco_do_produto, preco_do_produto_com_desconto + ' €', avaliacoes])
-            else:
-                lista_produtos.append([nome_produto, '', preco_do_produto_com_desconto + ' €', avaliacoes])
         else:
             continue
 
-
+print(lista_produtos)
 # Criar a tabela
-amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preco do produto com desconto', 'Avaliações'])
+amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preço do produto com desconto', 'Avaliações'])
+amazon_data = amazon_data.style.set_properties(**{'text-align': 'center'})
 print(amazon_data)
-# Salvar as news num excel
-# amazon_data.to_excel('amazon.xlsx', index=True)
+# Salvar dados num excel
+amazon_data.to_excel('amazon.xlsx')
