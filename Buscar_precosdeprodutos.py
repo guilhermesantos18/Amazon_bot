@@ -44,12 +44,16 @@ for produto in produtos:
 
 # Criar a tabela
 amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preço do produto com desconto', 'Avaliações'])
+amazon_data.style.set_properties(subset=['Preço do produto', 'Preço do produto com desconto', 'Avaliações'], **{'text-align': 'center'})
 # Ajustar a Tabela para ser legivel
-writer = pd.ExcelWriter('amazon.xlsx')
+writer = pd.ExcelWriter('amazon.xlsx', engine='xlsxwriter')
 amazon_data.to_excel(writer, sheet_name='data')
 for nome in amazon_data['Nome do produto']:
     lista_comprimento_nome_produtos.append(len(nome))
 comprimentos_maior_nome_produto = max(lista_comprimento_nome_produtos)
 writer.sheets['data'].set_column(1, 1, comprimentos_maior_nome_produto-30)
-
+for i in amazon_data.columns[1:3]:
+    comprimento = len(i)
+    center_aligned_df = amazon_data.style.set_properties(**{'text-align': 'center'})
+    writer.sheets['data'].set_column(2, 4, comprimento)
 writer.save()
