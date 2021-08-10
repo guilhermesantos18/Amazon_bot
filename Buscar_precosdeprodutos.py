@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+import urllib.parse
 # Para criar tabelas
 import pandas as pd
 
@@ -32,19 +33,21 @@ produtos = site_html.findAll('div', attrs={'class': 'sg-col-4-of-12 s-result-ite
 for produto in produtos:
     nome_produto = produto.find('h2', attrs={'class': 'a-size-mini a-spacing-none a-color-base s-line-clamp-4'}).text
     avaliacoes = produto.find('span', attrs={'class': 'a-size-base'}).text
+    link = produto.find('a', attrs={'class': 'a-link-normal s-no-outline'})['href']
+    link_produto = urllib.parse.urljoin('https://www.amazon.es', link)
+    print(link_produto)
     if 'Razer' in nome_produto[0:5]:
         if produto.find('span', attrs={'class': 'a-price-whole'}):
             preco_do_produto_com_desconto = produto.find('span', attrs={'class': 'a-price-whole'}).text
             if produto.find('span', attrs={'class': 'a-price a-text-price'}):
                 div_preco = produto.find('span', attrs={'class': 'a-price a-text-price'})
                 preco_do_produto = div_preco.find('span', attrs={'class': 'a-offscreen'}).text
-                lista_produtos.append([nome_produto, preco_do_produto, preco_do_produto_com_desconto + ' €', avaliacoes])
+                lista_produtos.append([nome_produto, preco_do_produto, preco_do_produto_com_desconto + ' €', avaliacoes, link_produto])
         else:
             continue
 
 # Criar a tabela
-amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preço do produto com desconto', 'Avaliações'])
-amazon_data.style.set_properties(subset=['Preço do produto', 'Preço do produto com desconto', 'Avaliações'], **{'text-align': 'center'})
+amazon_data = pd.DataFrame(lista_produtos, columns=['Nome do produto', 'Preço do produto', 'Preço do produto com desconto', 'Avaliações', 'Link do Produto'])
 # Ajustar a Tabela para ser legivel
 writer = pd.ExcelWriter('amazon.xlsx', engine='xlsxwriter')
 amazon_data.to_excel(writer, sheet_name='data')
@@ -52,8 +55,9 @@ for nome in amazon_data['Nome do produto']:
     lista_comprimento_nome_produtos.append(len(nome))
 comprimentos_maior_nome_produto = max(lista_comprimento_nome_produtos)
 writer.sheets['data'].set_column(1, 1, comprimentos_maior_nome_produto-30)
+# comp_link_produto = len(amazon_data.columns[4])
+# writer.sheets['data'].set_column(4, 4, comp_link_produto)
 for i in amazon_data.columns[1:3]:
     comprimento = len(i)
-    center_aligned_df = amazon_data.style.set_properties(**{'text-align': 'center'})
     writer.sheets['data'].set_column(2, 4, comprimento)
 writer.save()
